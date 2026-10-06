@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#5c1631">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Somm">
+  <title>Somm · Tasting Log</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon-192.png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <header class="topbar">
+    <a href="#/list" class="brand">Somm</a>
+    <div class="row gap">
+      <button id="sync" class="sync"><span class="dot"></span></button>
+      <a href="#/settings" class="icon-btn" aria-label="Settings">⚙︎</a>
+    </div>
+  </header>
+  <main id="view"></main>
+  <nav class="tabbar">
+    <a href="#/new" data-r="new"><span class="ti">＋</span>New</a>
+    <a href="#/list" data-r="list"><span class="ti">☰</span>Tastings</a>
+    <a href="#/summary" data-r="summary"><span class="ti">▥</span>Summary</a>
+  </nav>
+  <div id="datalists"></div>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
