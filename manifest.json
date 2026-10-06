@@ -1,7 +1,7 @@
 {
   "name": "Somm · Deductive Tasting Log",
   "short_name": "Somm",
-  "start_url": "./#/list",
+  "start_url": "./#/home",
   "scope": "./",
   "display": "standalone",
   "background_color": "#f6f2f0",

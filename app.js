@@ -113,17 +113,17 @@ async function runSync({ quiet = true } = {}) {
     if (!quiet || e.status !== -1) toast(e.message, 'bad');
   } finally {
     syncing = false; renderStatus();
-    const route = location.hash.split('/')[1] || 'list';
-    if (['list', 't', 'summary', 'settings'].includes(route)) render();
+    const route = location.hash.split('/')[1] || 'home';
+    if (['home', 'list', 't', 'summary', 'settings'].includes(route)) render();
   }
 }
 
 // ---------------- Router ----------------
-const routes = { new: viewForm, edit: viewForm, list: viewList, t: viewDetail, summary: viewSummary, settings: viewSettings };
+const routes = { home: viewHome, new: viewForm, edit: viewForm, list: viewList, t: viewDetail, summary: viewSummary, settings: viewSettings };
 function render() {
-  const [, route = 'list', arg] = location.hash.split('/');
+  const [, route = 'home', arg] = location.hash.split('/');
   document.querySelectorAll('.tabbar a').forEach((a) => a.classList.toggle('on', a.dataset.r === route || (route === 't' && a.dataset.r === 'list') || (route === 'edit' && a.dataset.r === 'new')));
-  (routes[route] || viewList)(arg ? decodeURIComponent(arg) : undefined);
+  (routes[route] || viewHome)(arg ? decodeURIComponent(arg) : undefined);
   renderStatus();
 }
 window.addEventListener('hashchange', () => { window.scrollTo(0, 0); render(); });
@@ -380,6 +380,30 @@ async function saveForm() {
 // =============================================================
 // LIST
 // =============================================================
+// =============================================================
+// HOME
+// =============================================================
+function viewHome() {
+  D = null;
+  const all = getRecords().sort((a, b) => String(b.date).localeCompare(String(a.date)) || String(b.id).localeCompare(String(a.id)));
+  const draft = LS.get('draft', null);
+  const hasDraft = draft && !draft.isEdit && (draft.rec.mode || draft.rec.type);
+  const year = String(new Date().getFullYear());
+  const thisYear = all.filter((r) => String(r.id).startsWith(year)).length;
+  const gb = all.filter((r) => r.mode === 'Blind' && r.s_grape);
+  const grapeAcc = gb.length ? Math.round((gb.filter((r) => r.s_grape === 'Correct').length / gb.length) * 100) + '%' : '—';
+  const kpi = (n, l) => `<div class="kpi"><div class="kpi-n">${n}</div><div class="kpi-l">${l}</div></div>`;
+  view.innerHTML = `
+    <div class="hero"><img src="icon-192.png" alt="" class="hero-icon"><h1>Somm</h1><p class="muted">Deductive Tasting Log</p></div>
+    ${!getSettings().token ? '<a class="card warn-banner" href="#/settings">⚠ Not connected to GitHub yet — tap to add your token in Settings</a>' : ''}
+    ${hasDraft
+      ? `<a class="btn primary big full" href="#/new">✎ Continue tasting<small>${esc([draft.rec.type, draft.rec.mode].filter(Boolean).join(' · '))}</small></a>`
+      : '<a class="btn primary big full" href="#/new">＋ New tasting</a>'}
+    <div class="kpis">${kpi(all.length, 'Wines')}${kpi(thisYear, year)}${kpi(grapeAcc, 'Blind grape')}</div>
+    ${all.length ? `<div class="row between"><h3>Recent</h3><a href="#/list" class="small muted">See all →</a></div>${all.slice(0, 3).map(cardHTML).join('')}` : '<p class="empty">No tastings yet. Tap <b>New tasting</b> to start.</p>'}
+    <div class="row gap home-links"><a class="btn full" href="#/list">☰ Tastings</a><a class="btn full" href="#/summary">▥ Summary</a></div>`;
+}
+
 const listState = { q: '', type: '', mode: '', year: '' };
 function viewList() {
   D = null;
@@ -652,9 +676,12 @@ fillDatalists();
 $('#sync').addEventListener('click', () => { location.hash = '#/settings'; });
 window.addEventListener('online', () => runSync());
 window.addEventListener('offline', renderStatus);
+const flushDraft = () => { if (D) { clearTimeout(saveT); LS.set('draft', D); } };
+window.addEventListener('pagehide', flushDraft);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flushDraft(); });
 window.addEventListener('somm-storage-error', () => toast('Could not save on this device (storage full?)', 'bad'));
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && !location.hash.startsWith('#/new') && !location.hash.startsWith('#/edit')) runSync(); });
-if (!location.hash) location.hash = getSettings().token ? '#/list' : '#/settings';
+if (!location.hash || location.hash === '#' || location.hash === '#/') location.hash = '#/home';
 render();
 runSync();
 

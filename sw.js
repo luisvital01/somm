@@ -1,5 +1,5 @@
 // Offline support: app shell is cached; GitHub API calls always go to the network.
-const VERSION = 'somm-v1';
+const VERSION = 'somm-v2';
 const SHELL = ['./', 'index.html', 'app.css', 'app.js', 'schema.js', 'csv.js', 'store.js', 'github.js', 'manifest.json', 'icon-192.png', 'icon-512.png', 'apple-touch-icon.png'];
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(VERSION).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));
